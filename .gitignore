@@ -1,0 +1,7 @@
+.vscode
+conf
+front
+node_modules
+src/__debug_bin
+src/go.sum
+src/main.exe
