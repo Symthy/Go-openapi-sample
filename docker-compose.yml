@@ -1,0 +1,10 @@
+version: '3'
+services:
+  app:
+    build: .
+    # ports:
+    #   - '3000:3000'
+    tty: true # コンテナの起動永続化
+    volumes:
+      - .:/go/src/work # マウントディレクトリ指定
+    stdin_open: true

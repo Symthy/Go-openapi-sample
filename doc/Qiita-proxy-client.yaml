@@ -1,0 +1,434 @@
+openapi: 3.1.0
+info:
+  title: User
+  version: '1.0'
+servers:
+  - url: 'http://qiita.com/api/v2'
+paths:
+  /authenticated_user:
+    parameters: []
+    get:
+      summary: Get User Info by User ID
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples: {}
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+      operationId: get-authenticated-user
+      description: get user information by access token
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+  /user/items:
+    parameters: []
+    get:
+      summary: ''
+      operationId: get-user-items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Items'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+      description: ''
+      parameters:
+        - schema:
+            type: string
+            minimum: 1
+            maximum: 100
+            default: 1
+            example: 1
+          in: query
+          name: page
+        - schema:
+            type: string
+          in: query
+          name: per_page
+        - schema:
+            type: string
+          in: header
+          name: Authorization
+components:
+  schemas:
+    User:
+      description: ''
+      type: object
+      properties:
+        description:
+          type: string
+          minLength: 1
+        facebook_id:
+          type: string
+          minLength: 1
+        followees_count:
+          type: number
+        followers_count:
+          type: number
+        github_login_name:
+          type: string
+          minLength: 1
+        id:
+          type: string
+          minLength: 1
+        items_count:
+          type: number
+        linkedin_id:
+          type: string
+          minLength: 1
+        location:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+        organization:
+          type: string
+          minLength: 1
+        permanent_id:
+          type: number
+        profile_image_url:
+          type: string
+          minLength: 1
+        team_only:
+          type: boolean
+        twitter_screen_name:
+          type: string
+          minLength: 1
+        website_url:
+          type: string
+          minLength: 1
+        image_monthly_upload_limit:
+          type: number
+        image_monthly_upload_remaining:
+          type: number
+      required:
+        - description
+        - facebook_id
+        - followees_count
+        - followers_count
+        - github_login_name
+        - id
+        - items_count
+        - linkedin_id
+        - location
+        - name
+        - organization
+        - permanent_id
+        - profile_image_url
+        - team_only
+        - twitter_screen_name
+        - website_url
+        - image_monthly_upload_limit
+        - image_monthly_upload_remaining
+      x-examples:
+        example-1:
+          description: 'Hello, world.'
+          facebook_id: qiita
+          followees_count: 100
+          followers_count: 200
+          github_login_name: qiitan
+          id: qiita
+          items_count: 300
+          linkedin_id: qiita
+          location: 'Tokyo, Japan'
+          name: Qiita キータ
+          organization: Increments Inc
+          permanent_id: 1
+          profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439'
+          team_only: false
+          twitter_screen_name: qiita
+          website_url: 'https://qiita.com'
+          image_monthly_upload_limit: 1048576
+          image_monthly_upload_remaining: 524288
+    Items:
+      type: array
+      description: ''
+      minItems: 1
+      uniqueItems: true
+      items:
+        type: object
+        required:
+          - rendered_body
+          - body
+          - coediting
+          - comments_count
+          - created_at
+          - group
+          - id
+          - likes_count
+          - private
+          - reactions_count
+          - tags
+          - title
+          - updated_at
+          - url
+          - user
+          - page_views_count
+          - team_membership
+        properties:
+          rendered_body:
+            type: string
+            minLength: 1
+          body:
+            type: string
+            minLength: 1
+          coediting:
+            type: boolean
+          comments_count:
+            type: number
+          created_at:
+            type: string
+            minLength: 1
+          group:
+            type: object
+            properties:
+              created_at:
+                type: string
+                minLength: 1
+              id:
+                type: number
+              name:
+                type: string
+                minLength: 1
+              private:
+                type: boolean
+              updated_at:
+                type: string
+                minLength: 1
+              url_name:
+                type: string
+                minLength: 1
+            required:
+              - created_at
+              - id
+              - name
+              - private
+              - updated_at
+              - url_name
+          id:
+            type: string
+            minLength: 1
+          likes_count:
+            type: number
+          private:
+            type: boolean
+          reactions_count:
+            type: number
+          tags:
+            type: array
+            uniqueItems: true
+            minItems: 1
+            items:
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                versions:
+                  type: array
+                  items:
+                    required: []
+                    properties: {}
+          title:
+            type: string
+            minLength: 1
+          updated_at:
+            type: string
+            minLength: 1
+          url:
+            type: string
+            minLength: 1
+          user:
+            type: object
+            properties:
+              description:
+                type: string
+                minLength: 1
+              facebook_id:
+                type: string
+                minLength: 1
+              followees_count:
+                type: number
+              followers_count:
+                type: number
+              github_login_name:
+                type: string
+                minLength: 1
+              id:
+                type: string
+                minLength: 1
+              items_count:
+                type: number
+              linkedin_id:
+                type: string
+                minLength: 1
+              location:
+                type: string
+                minLength: 1
+              name:
+                type: string
+                minLength: 1
+              organization:
+                type: string
+                minLength: 1
+              permanent_id:
+                type: number
+              profile_image_url:
+                type: string
+                minLength: 1
+              team_only:
+                type: boolean
+              twitter_screen_name:
+                type: string
+                minLength: 1
+              website_url:
+                type: string
+                minLength: 1
+            required:
+              - description
+              - facebook_id
+              - followees_count
+              - followers_count
+              - github_login_name
+              - id
+              - items_count
+              - linkedin_id
+              - location
+              - name
+              - organization
+              - permanent_id
+              - profile_image_url
+              - team_only
+              - twitter_screen_name
+              - website_url
+          page_views_count:
+            type: number
+          team_membership:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 1
+            required:
+              - name
+      x-examples:
+        example-1:
+          - rendered_body: <h1>Example</h1>
+            body: '# Example'
+            coediting: false
+            comments_count: 100
+            created_at: '2000-01-01T00:00:00+00:00'
+            group:
+              created_at: '2000-01-01T00:00:00+00:00'
+              id: 1
+              name: Dev
+              private: false
+              updated_at: '2000-01-01T00:00:00+00:00'
+              url_name: dev
+            id: c686397e4a0f4f11683d
+            likes_count: 100
+            private: false
+            reactions_count: 100
+            tags:
+              - name: Ruby
+                versions:
+                  - 0.0.1
+            title: Example title
+            updated_at: '2000-01-01T00:00:00+00:00'
+            url: 'https://qiita.com/Qiita/items/c686397e4a0f4f11683d'
+            user:
+              description: 'Hello, world.'
+              facebook_id: qiita
+              followees_count: 100
+              followers_count: 200
+              github_login_name: qiitan
+              id: qiita
+              items_count: 300
+              linkedin_id: qiita
+              location: 'Tokyo, Japan'
+              name: Qiita キータ
+              organization: Increments Inc
+              permanent_id: 1
+              profile_image_url: 'https://s3-ap-northeast-1.amazonaws.com/qiita-image-store/0/88/ccf90b557a406157dbb9d2d7e543dae384dbb561/large.png?1575443439'
+              team_only: false
+              twitter_screen_name: qiita
+              website_url: 'https://qiita.com'
+            page_views_count: 100
+            team_membership:
+              name: Qiita キータ
+    Error:
+      description: Error response
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+        type:
+          type: string
+          minLength: 1
+      required:
+        - message
+        - type
+      x-examples:
+        example-1:
+          message: Not found
+          type: not_found
+  responses:
+    '400':
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '404':
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    '500':
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
