@@ -1,5 +1,5 @@
 .vscode
-conf
+conf/token
 front
 node_modules
 src/__debug_bin

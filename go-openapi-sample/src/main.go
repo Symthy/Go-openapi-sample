@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Symthy/Go-openapi-sample/autogen/server"
-	"github.com/Symthy/Go-openapi-sample/handler"
+	"github.com/Symthy/golang-practices/go-openapi-sample/autogen/server"
+	"github.com/Symthy/golang-practices/go-openapi-sample/handler"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 )

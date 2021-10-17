@@ -19,6 +19,8 @@ ref: https://qiita.com/api/v2/docs
 
 ### 起動
 
+conf/token に Qitta アクセストークン記載
+
 ```
 cd src
 go run main.go

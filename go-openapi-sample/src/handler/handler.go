@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Symthy/Go-openapi-sample/autogen/client"
-	"github.com/Symthy/Go-openapi-sample/autogen/server"
+	"github.com/Symthy/golang-practices/go-openapi-sample/autogen/client"
+	"github.com/Symthy/golang-practices/go-openapi-sample/autogen/server"
 	"github.com/labstack/echo/v4"
 )
 
