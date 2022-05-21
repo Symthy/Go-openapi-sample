@@ -1,4 +1,4 @@
-module github.com/Symth/golang-practices/go-twitter-auth
+module github.com/Symthy/golang-practices/go-twitter-auth
 
 go 1.17
 
