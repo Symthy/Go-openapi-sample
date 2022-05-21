@@ -1,5 +1,12 @@
 # golang 並列処理
 
+Goの魅力
+
+- 他の言語は後から並列処理の機構を組み込むと大手術になることがあるが、Goは容易
+- 高水準のパフォーマンスが出るコードを少ない手間で実現できるところ
+- I/Oコストが高い領域はGoとの相性が良い
+
+Goの業務アプリケーションで並列処理の適用を検討すべき場面は、1リクエスト/バッチタスクの内部を高速化したい時。（例：１リクエスト中で複数データストアから情報取得し、結果を複数箇所に格納が必要な時）
 ## Gorutine
 
 - 個々のgoroutineは識別不可
@@ -8,6 +15,12 @@
 - 終了検知には別の仕組みが必要（channel?)
 - かなり少ない量のメモリしか要求せず、起動は高速
   - 起動コストはゼロではない
+
+goroutineの乱用は避ける
+
+- 並列処理は複雑さと高める
+- goroutineを駆使したコードは意図が伝わりにくい
+- 基本的には標準/準標準パッケージ機能の利用を検討
 
 ```go
 func main() {
@@ -381,6 +394,65 @@ func main() {
   - 送信側もgoroutineにすると、起動のタイムラグで先にmainのsleep実行
 - results をバッファ指定なしにした場合は、3回送信時点で受信側がそれ以上取り出そうとしdeadlock
 
+## fan-out/fan-in
+
+- ファンアウト：並列処理の起点となる１つのロジックから分岐。この分岐
+- ファンイン：分岐の待ち合わせ
+
+### sync.WaitGroup
+
+- ファンアウト、ファンインの仕組みを提供
+- 複数のgoroutineを管理
+
+メソッド：
+
+- Add：タスク数登録
+- Done：タスク完了
+- Wait：タスク完了の待機 
+
+
+```go
+func worker(id int) {
+	fmt.Printf("Worker %d start\n", id)
+	time.Sleep(time.Second)
+	fmt.Printf("Worker %d end\n", id)
+}
+
+func main() {
+    var wg sync.WaitGroup
+    for i := 1; i <= 5; i++ {
+        wg.Add(1)
+        i := i
+        go func() {
+            defer wg.Done()
+            worker(i)
+        }()
+    }
+    wg.Wait()
+}
+```
+
+### errorgroup.Group
+
+```go
+func main() {
+	// eg, ctx := errgroup.WithContext(ctx)
+	var eg errgroup.Group
+	for i := 1; i <= 5; i++ {
+		id := i
+		eg.Go(func() error {
+			worker(id)
+			return nil
+		})
+	}
+	err := eg.Wait()
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+}
+```
+
+
 # ref:
 
 [Goのgoroutine, channelをちょっと攻略！](https://qiita.com/taigamikami/items/fc798cdd6a4eaf9a7d5e)
@@ -392,3 +464,9 @@ func main() {
 [Goでの並列処理を徹底解剖！](https://zenn.dev/hsaki/books/golang-concurrency/viewer/basicusage)
 
 [[Go言語]Channelを使い倒そうぜ！](https://selfnote.work/20201110/programming/how-to-use-channel-on-golang/)
+
+[Go Concurrency Patterns: Pipelines and cancellation](https://go.dev/blog/pipelines)
+
+[Go Concurrency Patterns](https://talks.golang.org/2012/concurrency.slide)
+
+[Addvanced Go Concurrency Patterns](https://talks.golang.org/2013/advconc.slide)
