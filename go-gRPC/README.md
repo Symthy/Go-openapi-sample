@@ -1,6 +1,6 @@
 # gRPC practice
 
-基本
+proto基本
 
 ```sh
 cd basic
@@ -25,5 +25,12 @@ Client Streaming RPC
 
 ```sh
 cd clientstream
+protoc -I. --go_out=. --go-grpc_out=. proto/*.proto
+```
+
+Two-way Streaming RPC
+
+```sh
+cd twowaystream
 protoc -I. --go_out=. --go-grpc_out=. proto/*.proto
 ```
