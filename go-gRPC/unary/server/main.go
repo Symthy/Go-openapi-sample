@@ -12,15 +12,15 @@ import (
 )
 
 func main() {
-	lis, err := net.Listen("tcp", "localhost:50001")
+	lis, err := net.Listen("tcp", "localhost:50006")
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	serv := grpc.NewServer()
-	pb.RegisterFileServiceServer(serv, &Server{})
+	server := grpc.NewServer()
+	pb.RegisterFileServiceServer(server, &Server{})
 	fmt.Println("Unary RPC Server is running...")
-	if err := serv.Serve(lis); err != nil {
+	if err := server.Serve(lis); err != nil {
 		log.Fatalf("Unary RPC Server Failed to Serve: %v", err)
 	}
 }

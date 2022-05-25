@@ -1,5 +1,7 @@
 # gRPC (by golang)
 
+動機：SOAのとあるシステムで、新規のデータを新規DBに持ち、かつそのデータを既存サービス＆新設サービスの２つ(a) が利用するようになるため、新規のデータ群の管理を担う新規サービス(b)を立て、(a)(b)両者のやりとりに gRPC を用いるのが適切と思ったため Study
+
 ## gRPC とは
 
 Google が開発した RPC フレームワークで、gRPC を使うと異なる言語で書かれたアプリケーション同士が gRPC により自動生成されたインターフェースを通じて通信することが可能。
@@ -232,6 +234,204 @@ service Greeter {
 }
 ```
 
+## Interceptor
+
+- メソッド前後に処理を挟むための仕組
+- 認証やロギング、監視、バリデーションなど複数のRPCで共通して行いたい処理で利用する
+- サーバ側/クライアント側どちらも対応
+  - サーバ
+    - UnaryServerInterceptor
+    - StreamServerInterceptor
+  - クライアント
+    - UnaryClientInterceptor
+    - StreamClientInterceptor
+
+以下を満たす関数を実装
+
+```go
+type UnaryServerInterceptor func(
+  ctx context.Context
+  req interface{}
+  info *UnaryServerInfo // メソッド等のサーバ情報
+  handler UnaryHandler  // クライアントからコールされるhandler
+) (resp interface{}, err error) // resp: handlerからのレスポンス
+```
+
+Interceptor追加方法
+
+```go
+// サーバ
+server := grpc.NewServer(
+  grpc.UnaryInterceptor(myInterceptor())
+)
+
+// クライアント
+connection, err := grpc.Dial(
+  "localhost:50001",
+  grpc.WithUnaryInterceptor(myInterceptor())
+)
+```
+
+### ロギング
+
+```go
+func logging() grpc.UnaryServerInterceptor {
+    return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+        log.Printf("request: %+v", req)
+        resp, err = handler(ctx, req)
+        if err != nil {
+          return nil, err
+        }
+        log.Printf("response: %+v", resp)
+        return resp, nil
+    }
+}
+```
+
+### 認証
+
+https://github.com/grpc-ecosystem/go-grpc-middleware
+
+例：
+
+- サーバ側
+
+```go
+func main() {
+  // :
+  server := grpc.NewServer(
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				buildLogging(),
+				grpc_auth.UnaryServerInterceptor(authorize),
+			),
+		),
+	)
+  pb.RegisterFileServiceServer(server, &Server{})
+  // :
+}
+
+func authorize(ctx context.Context) (context.Context, error) {
+	token, err := grpc_auth.AuthFromMD(ctx, "Bearer")
+	if err != nil {
+		return nil, err
+	}
+
+	if token != "xxxxx" {
+		return nil, status.Error(codes.Unauthenticated, "token is invalid")
+	}
+	return ctx, nil
+}
+```
+
+- クライアント側
+
+```go
+func callServerMethod() {
+	md := metadata.New(map[string]string{"authorization": "Bearer xxxxx"})
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+  // :
+}
+```
+
+認証エラー出力（クライアント側）
+
+```
+2022/05/25 21:35:44 rpc error: code = Unknown desc = bad token
+exit status 1
+```
+
+### エラーハンドリング
+
+公式ドキュメント： https://www.grpc.io/docs/guides/error/
+
+例：
+
+- サーバ側
+
+```go
+return nil, status.Error(codes.NotFound, "not found")
+```
+
+- クライアント側
+
+```go
+  res, err := client.serverMethod(ctx, &pb.ServerRequest{})
+	if err != nil {
+		resErr, ok := status.FromError(err)
+		if ok {
+			if resErr.Code() == codes.NotFound {
+				log.Fatalf("Error Code: %v, Error Message: %v", resErr.Code(), resErr.Message())
+			}
+		} else {
+			log.Fatalln("unknown error")
+		} 
+  } else {
+    log.Fatalln(err)
+  }
+```
+
+### Deadlines
+
+サーバからレスポンスを待つ時間（超えたらタイムアウトでエラー）
+
+例：
+
+- クライアント側
+
+```go
+func callServerMethod() {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+  res, err := client.serverMethod(ctx, &pb.ServerRequest{})
+  if err != nil {
+		resErr, ok := status.FromError(err)
+    if resErr.Code() == codes.DeadlineExceeded {
+	  	log.Fatalln("deadline exceeded")
+    }
+    // :
+  }
+}
+```
+
+### SSL通信化
+
+例：
+
+- サーバ側
+
+```go
+func main() {
+  // :
+  credentials, err := credentials.NewServerTLSFromFile(
+		"ssl/localhost.pem",
+		"ssl/localhost-key.pem",
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	server := grpc.NewServer(
+		grpc.Creds(credentials),
+    // :
+  )
+  // :
+}
+```
+
+- クライアント側
+
+```go
+func main() {
+  certfile := "xxxxxx/rootCA.pem"
+  creds, err := credentials.NewClientTLSFromFile(certFile, "")
+  conn, err := grpc.Dial("localhost:50000", grpc.WithTransportCredentials(creds))
+  // :
+}
+```
+
 ## ref 
 
 環境構築：
@@ -246,3 +446,5 @@ service Greeter {
 - [Go言語で簡単なgRPCサーバーを作成](https://dev.classmethod.jp/articles/golang-grpc-sample-project/)
 
 - [Go で実装しながら gRPC を理解する](https://reboooot.net/post/hello-grpc/)
+
+Try Code：　https://github.com/Symthy/golang-practices/tree/main/go-gRPC
