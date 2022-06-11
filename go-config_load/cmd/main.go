@@ -10,17 +10,17 @@ import (
 )
 
 func main() {
-	sysConf := file.NewConfFileLoader("./conf/system.propertie")
-	usrConf := file.NewConfFileLoader("./conf/user.propertie")
+	sysConf := file.LoadConfigFile("./conf/system.propertie")
+	usrConf := file.LoadConfigFile("./conf/user.propertie")
 	resolver := file.NewConfigValueResolver(sysConf, usrConf)
 
-	fmt.Println(resolver.ResolveValueString("ENV", "default"))
-	fmt.Println(resolver.ResolveValueString("DB", "default"))
-	fmt.Println(resolver.ResolveValueString("DB_USER", "default"))
-	fmt.Println(resolver.ResolveValueString("DB_PASS", "default"))
+	fmt.Println(resolver.ResolveValueStringOrDefault("ENV", "default"))
+	fmt.Println(resolver.ResolveValueStringOrDefault("DB", "default"))
+	fmt.Println(resolver.ResolveValueStringOrDefault("DB_USER", "default"))
+	fmt.Println(resolver.ResolveValueStringOrDefault("DB_PASS", "default"))
 }
 
-func resolveValue(conf file.ConfFile, key string) string {
+func resolveValue(conf file.Config, key string) string {
 	if conf == nil {
 		fmt.Println("no conf file")
 		return ""

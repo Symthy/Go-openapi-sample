@@ -1,34 +1,35 @@
 package file
 
 import (
-	"fmt"
-
 	"gopkg.in/go-ini/ini.v1"
 )
 
-type ConfFile interface {
+var _ Config = (*ConfigFile)(nil)
+
+type Config interface {
 	GetString(key string) string
 	GetInt(key string) (int, error)
 }
 
-type ConfFileLoader struct {
-	file *ini.File
-	nonExist bool
-}
-
-func NewConfFileLoader(filePath string) ConfFile {
+func LoadConfigFile(filePath string) Config {
 	cfg, err := ini.Load(filePath)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return &EmptyConfig{}
 	}
-	return &ConfFileLoader{file: cfg}
+	return &ConfigFile{file: cfg}
 }
 
-func (c ConfFileLoader) GetString(key string) string {
+type ConfigFile struct {
+	file *ini.File
+}
+
+func (c ConfigFile) GetString(key string) string {
 	return c.file.Section("").Key(key).String()
 }
 
-func (c ConfFileLoader) GetInt(key string) (int, error) {
-	return c.file.Section("").Key(key).Int()
+func (c ConfigFile) GetInt(key string) (int, error) {
+	if c.file.Section("").HasKey(key) {
+		return c.file.Section("").Key(key).Int()
+	}
+	return 0, NonExistKeyError{}
 }
