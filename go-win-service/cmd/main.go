@@ -2,13 +2,20 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
-	"time"
 
 	"github.com/kardianos/service"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/natefinch/lumberjack"
 )
+
+func helloHandler(c echo.Context) error {
+	return c.String(http.StatusOK, "Hello, World!")
+}
 
 var logger service.Logger
 
@@ -16,26 +23,43 @@ type exarvice struct {
 	exit chan struct{}
 }
 
-func (e *exarvice) run() error {
+func (s *exarvice) run(l io.Writer) {
 	log.Print("[lumberjack] Exarvice Start !!!")
 	logger.Info("[Service] Exarvice Start !!!")
 
-	ticker := time.NewTicker(5 * time.Second)
-	for {
-		select {
-		case tm := <-ticker.C:
-			log.Printf("[lumberjack] Still running at %v", tm)
-			logger.Infof("[Service] Still running at %v", tm)
-		case <-e.exit:
-			ticker.Stop()
-			log.Print("[lumberjack] Exarvice Stop ...")
-			logger.Info("[Service] Exarvice Stop ...")
-			return nil
-		}
-	}
+	e := echo.New()
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Logger.SetOutput(l)
+	// Routes
+	e.GET("/", helloHandler)
+	defer e.Close()
+
+	// Start server
+	e.Logger.Fatal(e.Start(":1323"))
+	logger.Info("[Service] echo Start !!!")
+	// ticker := time.NewTicker(5 * time.Second)
+	// for {
+	// 	select {
+	// 	case tm := <-ticker.C:
+	// 		log.Printf("[lumberjack] Still running at %v", tm)
+	// 		logger.Infof("[Service] Still running at %v", tm)
+	// 	case <-e.exit:
+	// 		ticker.Stop()
+	// 		log.Print("[lumberjack] Exarvice Stop ...")
+	// 		logger.Info("[Service] Exarvice Stop ...")
+	// 		return
+	// 	}
+	// }
 }
 
-func (e *exarvice) Start(s service.Service) error {
+func (s *exarvice) Start(se service.Service) error {
+	l := &lumberjack.Logger{
+		Filename: "C:\\work\\win_service_lumberjack.log",
+	}
+	log.SetOutput(l)
+
 	if service.Interactive() {
 		log.Print("[lumberjack] Running in terminal.")
 		logger.Info("[Service] Running in terminal.")
@@ -43,9 +67,9 @@ func (e *exarvice) Start(s service.Service) error {
 		log.Print("[lumberjack] Running under service manager.")
 		logger.Info("[Service] Running under service manager.")
 	}
-	e.exit = make(chan struct{})
+	s.exit = make(chan struct{})
 
-	go e.run()
+	go s.run(l)
 	return nil
 }
 
@@ -60,10 +84,6 @@ func main() {
 		DisplayName: "Exarvice (Go Service Example)",
 		Description: "This is an example Go service.",
 	}
-	log.SetOutput(&lumberjack.Logger{
-		Filename: "C:\\work\\win_service_lumberjack.log",
-	})
-	log.Print("main kick")
 
 	// Create Exarvice service
 	program := &exarvice{}

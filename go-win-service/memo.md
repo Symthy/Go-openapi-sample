@@ -1,6 +1,6 @@
 # memo
 
-golange で開発し、ビルドして生成した exe ファイルは、
+golange で開発し、ビルドして生成した exe ファイルは、そのままでは
 
 sc や [NSSM (the Non-Sucking Service Manager)](http://nssm.cc/) では、Windows サービス化はできても、起動ができない。
 
@@ -16,7 +16,14 @@ ref: [エラー 1053：カスタムサービスが開始されません](https:/
 
 golang には、windows サービス化 に必要となる処理も含む準標準ライブラリ（golang.org/x/sys）があり、ご丁寧にサンプルコードもある（https://pkg.go.dev/golang.org/x/sys@v0.0.0-20220702020025-31831981b65f/windows/svc/example）
 
-[kardianos/service](https://github.com/percona/kardianos-service) は windows の処理に関しては上記ライブラリを使用しつつ、win, linux, mac 等でサービス化を可能とするための共通のインターフェースを提供している。
+# kardianos/service とは
+
+[kardianos/service](https://github.com/percona/kardianos-service) は windows の処理に関しては上記ライブラリを使用しつつ、win, linux, 等でサービス化を可能とするための共通のインターフェースを提供している。
+
+- OS 毎にサービス化するために必要な制御は異なる（特に Windows は大きく異なる）が、その制御処理は、kardianos/service に実装されており
+  共通のインターフェース (type service interface) を提供して、、サービス化を容易にしている。
+
+https://github.com/percona/kardianos-service/blob/master/service.go#L335
 
 # refs
 
