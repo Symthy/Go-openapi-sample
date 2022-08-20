@@ -14,8 +14,10 @@ func main() {
 	fmt.Println("[[Sub]]")
 	fmt.Printf("Sub Args: %s\n", strings.Join(args, " "))
 
-	execCmd("echo", args)
-	execCmdWithSysProcAttr("echo", args)
+	opts := []string{"/c", "echo"}
+	allargs := append(opts, args...)
+	execCmd("cmd.exe", allargs)
+	execCmdWithSysProcAttr("cmd.exe", allargs)
 }
 
 func execCmd(name string, opts []string) {

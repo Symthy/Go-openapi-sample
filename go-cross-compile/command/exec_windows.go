@@ -26,7 +26,7 @@ func Exec() {
 		fmt.Println("Not specied exec command")
 	}
 	opts := []string{
-		"-a", "x\"xx", "-b", "\"y\\y y\"", "-c", "z:z/z", "-d", "t\"ru\"e", "-e", "2^0'2-2",
+		"-a", "x$xx\"x", "-b", "\"y\\y y\"", "-c", "z:z/z", "-d", "t\"ru\"e", "-e", "2^0'2-2",
 	}
 	execCmd(name, opts)
 }
