@@ -22,6 +22,10 @@ go-oapigen (Echo) の client/server 自動生成お試し
 
 Qitta API をプロキシーするのみ
 
+## go-opentelementry-trial
+
+OpenTelemetry の チュートリアルお試し
+
 ## go-pararell
 
 並列処理のお試し。goroutine、channel、waitgroup 等基本的な物
